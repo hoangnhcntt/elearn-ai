@@ -12,6 +12,8 @@ lerna-debug.log*
 .env.*
 !.env.example
 .wrangler
+accounts/students.csv
+accounts/teachers.csv
 
 node_modules
 dist

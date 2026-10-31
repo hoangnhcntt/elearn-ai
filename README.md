@@ -79,6 +79,17 @@ WORKER_AI_MODEL=@cf/meta/llama-3.1-8b-instruct
 
 Lưu ý: ở chế độ mock, app vẫn chạy mà không cần key thật.
 
+## Danh sách tài khoản mẫu
+
+Thư mục `accounts/` có hai bảng CSV riêng:
+
+- `accounts/students.csv`: danh sách học sinh
+- `accounts/teachers.csv`: danh sách giáo viên
+
+Mỗi dòng gồm `name,username,password`. Có thể mở bằng Excel hoặc trình soạn thảo văn bản. Hai file CSV dữ liệu thật đã được `.gitignore` loại khỏi Git; chỉ các file `.example` rỗng được đưa lên repository. **Không điền mật khẩu thật vào repository công khai.**
+
+Các file này hiện chỉ là danh sách cục bộ để quản lý thủ công, **chưa kết nối với chức năng đăng nhập**. Ứng dụng vẫn dùng dữ liệu demo. Muốn tạo tài khoản đăng nhập thật, cần nối Supabase Auth hoặc backend xác thực và không lưu mật khẩu dạng chữ thường.
+
 ## 5. Deploy online
 
 ### 5.1 Tạo Supabase project
