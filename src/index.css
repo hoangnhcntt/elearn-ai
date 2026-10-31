@@ -6,8 +6,8 @@
   font-family: 'Inter', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #0f172a;
-  background: #f8fafc;
+  color: #e6eefb;
+  background: #08172b;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -26,7 +26,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f8fafc;
+  background: #08172b;
 }
 
 button,
@@ -47,3 +47,126 @@ p {
   margin: 0;
 }
 
+.bg-white {
+  background-color: #10233b;
+}
+
+.bg-slate-50 {
+  background-color: #0d1f35;
+}
+
+.bg-slate-100 {
+  background-color: #08172b;
+}
+
+.bg-slate-200 {
+  background-color: #243a56;
+}
+
+.bg-brand-50 {
+  background-color: #142c49;
+}
+
+.bg-brand-100 {
+  background-color: #1a385c;
+}
+
+.text-slate-900 {
+  color: #f1f6fd;
+}
+
+.text-slate-800 {
+  color: #e2ebf7;
+}
+
+.text-slate-700 {
+  color: #d3dfef;
+}
+
+.text-slate-600 {
+  color: #bdcce0;
+}
+
+.text-slate-500 {
+  color: #9aadc6;
+}
+
+.text-slate-400 {
+  color: #8398b3;
+}
+
+.text-brand-700,
+.text-brand-600 {
+  color: #91bbff;
+}
+
+.border-slate-200 {
+  border-color: #263d5a;
+}
+
+.border-blue-100 {
+  border-color: #294b75;
+}
+
+.bg-blue-50 {
+  background-color: #142c49;
+}
+
+.text-blue-700 {
+  color: #a9ceff;
+}
+
+.ring-blue-200 {
+  --tw-ring-color: rgb(96 165 250 / 0.35);
+}
+
+.bg-green-50 {
+  background-color: #12362f;
+}
+
+.text-green-700 {
+  color: #86efc2;
+}
+
+.ring-green-200 {
+  --tw-ring-color: rgb(52 211 153 / 0.35);
+}
+
+.bg-amber-50 {
+  background-color: #3a2d16;
+}
+
+.text-amber-700 {
+  color: #fcd477;
+}
+
+.ring-amber-200 {
+  --tw-ring-color: rgb(251 191 36 / 0.35);
+}
+
+.bg-red-50 {
+  background-color: #3d202b;
+}
+
+.text-red-700 {
+  color: #fda4af;
+}
+
+.ring-red-200 {
+  --tw-ring-color: rgb(251 113 133 / 0.35);
+}
+
+.hover\:bg-white:hover {
+  background-color: #18304c;
+}
+
+input,
+select,
+textarea {
+  color-scheme: dark;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #8398b3;
+}

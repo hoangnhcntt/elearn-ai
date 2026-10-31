@@ -36,10 +36,14 @@ export function TeacherDashboard() {
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#263d5a" />
+                  <XAxis dataKey="name" stroke="#9aadc6" />
+                  <YAxis stroke="#9aadc6" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#10233b', borderColor: '#263d5a', borderRadius: 12 }}
+                    labelStyle={{ color: '#f1f6fd' }}
+                    itemStyle={{ color: '#91bbff' }}
+                  />
                   <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -107,10 +111,14 @@ export function TeacherDashboard() {
             <div className="mt-6 h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={[{ name: 'Mon', value: 64 }, { name: 'Tue', value: 78 }, { name: 'Wed', value: 81 }, { name: 'Thu', value: 69 }, { name: 'Fri', value: 88 }, { name: 'Sat', value: 92 }]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#263d5a" />
+                  <XAxis dataKey="name" stroke="#9aadc6" />
+                  <YAxis stroke="#9aadc6" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#10233b', borderColor: '#263d5a', borderRadius: 12 }}
+                    labelStyle={{ color: '#f1f6fd' }}
+                    itemStyle={{ color: '#91bbff' }}
+                  />
                   <Bar dataKey="value" fill="#2563eb" radius={[10, 10, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
