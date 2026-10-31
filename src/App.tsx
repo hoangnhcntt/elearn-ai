@@ -13,10 +13,11 @@ import { StudentsPage } from './pages/Students'
 import { StudentDashboard } from './pages/StudentDashboard'
 import { TeacherDashboard } from './pages/TeacherDashboard'
 import { quizBank } from './data/mockData'
+import { forgetDemoUser, getRememberedUser } from './lib/demoAuth'
 import type { AppUser, Language } from './types'
 
 function App() {
-  const [user, setUser] = useState<AppUser | null>(null)
+  const [user, setUser] = useState<AppUser | null>(getRememberedUser)
   const [language, setLanguage] = useState<Language>('vi')
   const [currentPage, setCurrentPage] = useState<AppPage>('dashboard')
   const [quizScore, setQuizScore] = useState<number | null>(null)
@@ -31,6 +32,7 @@ function App() {
       quizScore,
       draftTitle,
       setUser: (nextUser: AppUser | null) => {
+        if (!nextUser) forgetDemoUser()
         setUser(nextUser)
         setCurrentPage('dashboard')
       },

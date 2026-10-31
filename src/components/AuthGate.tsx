@@ -1,21 +1,38 @@
-import { useMemo, useState } from 'react'
-import { ArrowRight, BookOpenCheck, ShieldCheck, Sparkles } from 'lucide-react'
-import { teacherProfile, students } from '../data/mockData'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
+import { BookOpenCheck, ShieldCheck, Sparkles } from 'lucide-react'
+import { authenticateDemoAccount, forgetDemoUser, rememberDemoUser } from '../lib/demoAuth'
 import { defaultAppState, useAppState } from '../lib/appState'
 import { Badge } from './ui'
-
-const teacherButton = 'teacher'
-const studentButton = 'student'
 
 export function AuthGate() {
   const { setUser } = useAppState()
   const [role, setRole] = useState<'teacher' | 'student'>('teacher')
-  const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id ?? '')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const [error, setError] = useState('')
 
-  const selectedStudent = useMemo(
-    () => students.find((student) => student.id === selectedStudentId) ?? students[0],
-    [selectedStudentId],
-  )
+  const handleLogin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError('')
+
+    const user = authenticateDemoAccount(role, username, password)
+    if (!user) {
+      setError('Tên đăng nhập hoặc mật khẩu không đúng.')
+      return
+    }
+
+    try {
+      if (rememberMe) rememberDemoUser(user)
+      else forgetDemoUser()
+    } catch {
+      setError('Không thể lưu phiên đăng nhập trên trình duyệt này. Hãy tắt “Ghi nhớ đăng nhập” và thử lại.')
+      return
+    }
+
+    setUser(user)
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-8 text-slate-800 md:px-8">
@@ -57,82 +74,75 @@ export function AuthGate() {
 
           <div className="flex items-center justify-center p-8 md:p-12">
             <div className="w-full max-w-md">
-              <Badge label="Secure sign in" tone="blue" />
-              <h2 className="mt-6 text-3xl font-bold text-slate-900">Welcome back</h2>
-              <p className="mt-2 text-sm text-slate-500">Choose a role to preview the platform in mock mode.</p>
+              <Badge label="Đăng nhập demo" tone="blue" />
+              <h2 className="mt-6 text-3xl font-bold text-slate-900">Chào mừng trở lại</h2>
+              <p className="mt-2 text-sm text-slate-500">Đăng nhập bằng tài khoản học sinh hoặc giáo viên.</p>
 
               <div className="mt-8 flex rounded-xl border border-slate-200 bg-slate-50 p-1">
                 <button
                   type="button"
-                  className={`flex-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${role === teacherButton ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500'}`}
-                  onClick={() => setRole('teacher')}
+                  className={`flex-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${role === 'teacher' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500'}`}
+                  onClick={() => { setRole('teacher'); setError('') }}
+                  aria-pressed={role === 'teacher'}
                 >
-                  Teacher
+                  Giáo viên
                 </button>
                 <button
                   type="button"
-                  className={`flex-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${role === studentButton ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500'}`}
-                  onClick={() => setRole('student')}
+                  className={`flex-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500'}`}
+                  onClick={() => { setRole('student'); setError('') }}
+                  aria-pressed={role === 'student'}
                 >
-                  Student
+                  Học sinh
                 </button>
               </div>
 
-              {role === 'teacher' ? (
-                <div className="mt-8 space-y-4">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Teacher account</p>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-900">{teacherProfile.name}</p>
-                        <p className="text-sm text-slate-500">{teacherProfile.email}</p>
-                      </div>
-                      <Badge label="Teacher" tone="green" />
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between rounded-2xl bg-brand-500 px-4 py-4 text-left text-white transition hover:bg-brand-600"
-                    onClick={() => setUser(teacherProfile)}
-                  >
-                    <span>Login as teacher</span>
-                    <ArrowRight size={18} />
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-8 space-y-4">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">Student account</span>
-                    <select
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none ring-0"
-                      value={selectedStudent?.id ?? ''}
-                      onChange={(event) => setSelectedStudentId(event.target.value)}
-                    >
-                      {students.map((student) => (
-                        <option key={student.id} value={student.id}>
-                          {student.name} ({student.level})
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm text-slate-500">Selected student</p>
-                    <p className="mt-2 text-lg font-semibold text-slate-900">{selectedStudent?.name}</p>
-                    <p className="text-sm text-slate-500">{selectedStudent?.email}</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between rounded-2xl bg-brand-500 px-4 py-4 text-left text-white transition hover:bg-brand-600"
-                    onClick={() => setUser(selectedStudent ?? students[0])}
-                  >
-                    <span>Login as student</span>
-                    <ArrowRight size={18} />
-                  </button>
-                </div>
-              )}
+              <form className="mt-6 space-y-4" onSubmit={handleLogin}>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Tên đăng nhập</span>
+                  <input
+                    type="text"
+                    name="username"
+                    autoComplete="username"
+                    required
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    placeholder={role === 'teacher' ? 'teacher.demo' : 'student.demo'}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Mật khẩu</span>
+                  <input
+                    type="password"
+                    name="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30"
+                  />
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(event) => setRememberMe(event.target.checked)}
+                    className="h-4 w-4 rounded accent-brand-500"
+                  />
+                  Ghi nhớ đăng nhập trên thiết bị này
+                </label>
+                {error && <p role="alert" className="text-sm font-medium text-red-700">{error}</p>}
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center rounded-2xl bg-brand-500 px-4 py-3.5 text-left font-semibold text-white transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                >
+                  Đăng nhập
+                </button>
+                <p className="text-xs leading-relaxed text-slate-500">
+                  Đây là bản demo: tài khoản mẫu dùng chung và không bảo vệ dữ liệu thật.
+                </p>
+              </form>
             </div>
           </div>
         </div>
@@ -142,5 +152,5 @@ export function AuthGate() {
 }
 
 export function SignOutButton() {
-  return <button type="button" onClick={() => defaultAppState.setUser(null)} className="text-sm text-slate-500">Log out</button>
+  return <button type="button" onClick={() => defaultAppState.setUser(null)} className="text-sm text-slate-500">Đăng xuất</button>
 }

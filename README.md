@@ -5,6 +5,7 @@ ELearn AI là nền tảng học tiếng Anh dành cho giáo viên và học sin
 ## 1. Tính năng đã hoàn thành
 
 - Giao diện landing + login đa vai trò
+- Đăng nhập demo theo vai trò với tùy chọn ghi nhớ phiên
 - Teacher Dashboard và Student Dashboard
 - Quản lý lớp học và học sinh demo
 - Bài tập / quiz editor / quiz taking mock
@@ -78,6 +79,19 @@ WORKER_AI_MODEL=@cf/meta/llama-3.1-8b-instruct
 ```
 
 Lưu ý: ở chế độ mock, app vẫn chạy mà không cần key thật.
+
+### Đăng nhập demo
+
+Trang đăng nhập chấp nhận hai tài khoản demo:
+
+| Vai trò | Tên đăng nhập | Mật khẩu |
+|---|---|---|
+| Giáo viên | `teacher.demo` | `TeacherDemo-5vR9!xP3` |
+| Học sinh | `student.demo` | `StudentDemo-8hQ4!mK2` |
+
+Tick **Ghi nhớ đăng nhập trên thiết bị này** để giữ phiên trong local storage; mật khẩu không được lưu. Bỏ tick thì phiên chỉ tồn tại đến khi tải lại trang hoặc đóng tab. Đăng xuất sẽ xóa phiên đã ghi nhớ.
+
+Đây chỉ là xác thực mock ở frontend; thông tin tài khoản demo nằm trong mã JavaScript công khai và bất kỳ ai cũng có thể đăng nhập. Không sử dụng cho dữ liệu thật hoặc mật khẩu thật. Hai CSV riêng trong `accounts/` chưa được ứng dụng đọc. Muốn xác thực an toàn và tạo nhiều tài khoản, hãy cấu hình Supabase Auth/backend thay vì thêm mật khẩu vào frontend.
 
 ## Danh sách tài khoản mẫu
 
