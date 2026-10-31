@@ -90,21 +90,38 @@ Lưu ý: ở chế độ mock, app vẫn chạy mà không cần key thật.
 5. Cấu hình Auth và đăng nhập
 6. Bật Row Level Security, kiểm tra các policy đã tạo
 
-### 5.2 Tạo Cloudflare account
+### 5.2 Deploy API Worker
 
-1. Tạo tài khoản Cloudflare
-2. Tạo Worker
-3. Cấu hình `wrangler.toml`
-4. Thêm binding AI model
-5. Deploy API worker
+Worker dùng binding Workers AI `AI`, đã được khai báo trong `wrangler.toml`. Từ thư mục dự án, cài dependencies rồi deploy:
 
-### 5.3 Deploy frontend
+```bash
+npm ci
+npm run deploy:worker
+```
 
-- Dùng Cloudflare Pages hoặc Vite build output
-- Đặt environment variables tương ứng
-- Tên miền mặc định: `elearn-ai.pages.dev`
+Sau khi deploy, kiểm tra endpoint health tại `https://elearn-ai-worker.<subdomain>.workers.dev/api/health`.
 
-### 5.4 Tạo GitHub repo
+### 5.3 Deploy frontend lên Cloudflare Pages
+
+Kết nối GitHub để Cloudflare tự build và deploy mỗi khi có commit mới trên nhánh `main`:
+
+1. Trong Cloudflare, mở **Workers & Pages** và chọn **Create application** → **Pages** → **Connect to Git**.
+2. Kết nối GitHub, cấp quyền cho repository công khai `hoangnhcntt/elearn-ai`, rồi chọn repository đó.
+3. Chọn nhánh production `main`, framework preset `Vite`, build command `npm run build` và output directory `dist`.
+4. Tạo project Pages và chờ Cloudflare hoàn tất production deployment.
+
+Ứng dụng frontend hiện ở chế độ mock; Supabase Auth và API Worker chưa được nối vào frontend.
+
+### 5.4 Tạo Supabase project
+
+1. Vào https://supabase.com/
+2. Tạo project mới
+3. Lấy URL và anon key
+4. Chạy SQL migration trong `supabase/migrations/001_init.sql`
+5. Cấu hình Auth và đăng nhập
+6. Bật Row Level Security, kiểm tra các policy đã tạo
+
+### 5.5 Tạo GitHub repo
 
 ```bash
 git init

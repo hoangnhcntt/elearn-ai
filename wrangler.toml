@@ -5,7 +5,5 @@ compatibility_date = "2026-10-31"
 [vars]
 RATE_LIMIT = "10"
 
-# Add bindings in Cloudflare dashboard:
-# [[ai]]
-# binding = "AI"
-# model = "@cf/meta/llama-3.1-8b-instruct"
+[ai]
+binding = "AI"
