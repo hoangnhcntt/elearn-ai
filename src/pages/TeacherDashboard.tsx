@@ -3,6 +3,7 @@ import { BarChart, Bar, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { assignments, classes, students } from '../data/mockData'
 import { DashboardLayout } from '../components/Layout'
 import { Badge, Card, StatCard } from '../components/ui'
+import { useAppState } from '../lib/appState'
 
 const chartData = [
   { name: 'Jan', score: 62 },
@@ -14,9 +15,20 @@ const chartData = [
 ]
 
 export function TeacherDashboard() {
+  const { setCurrentPage } = useAppState()
+
   return (
     <DashboardLayout active="dashboard" title="Teacher Dashboard">
       <div className="space-y-6">
+        <div className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
+          <div>
+            <p className="font-semibold text-slate-900">Your learning workspace</p>
+            <p className="mt-1 text-sm text-slate-500">Manage classes, review progress, and prepare assignments.</p>
+          </div>
+          <button type="button" onClick={() => setCurrentPage('assignments')} className="rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600">
+            Create assignment
+          </button>
+        </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard title="Total students" value={String(students.length)} hint="+12%" />
           <StatCard title="Total classes" value={String(classes.length)} hint="2 active" />
@@ -57,13 +69,13 @@ export function TeacherDashboard() {
             </div>
             <div className="mt-4 space-y-4">
               {students.map((student) => (
-                <div key={student.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <button key={student.id} type="button" onClick={() => setCurrentPage('students')} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-blue-400">
                   <div>
                     <p className="font-medium text-slate-800">{student.name}</p>
                     <p className="text-xs text-slate-500">{student.level} • {student.progress}% progress</p>
                   </div>
                   <Badge label={student.progress < 70 ? 'Needs help' : 'On track'} tone={student.progress < 70 ? 'amber' : 'green'} />
-                </div>
+                </button>
               ))}
             </div>
           </Card>
@@ -77,13 +89,13 @@ export function TeacherDashboard() {
             </div>
             <div className="mt-4 space-y-3">
               {classes.map((item) => (
-                <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <button key={item.id} type="button" onClick={() => setCurrentPage('classes')} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-blue-400">
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-slate-800">{item.name}</p>
                     <Badge tone="blue" label={item.level} />
                   </div>
                   <p className="mt-2 text-sm text-slate-500">{item.studentCount} students • {item.nextLesson}</p>
-                </div>
+                </button>
               ))}
             </div>
           </Card>
@@ -95,10 +107,10 @@ export function TeacherDashboard() {
             </div>
             <div className="mt-4 space-y-3">
               {assignments.map((assignment) => (
-                <div key={assignment.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <button key={assignment.id} type="button" onClick={() => setCurrentPage('assignments')} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-blue-400">
                   <p className="font-medium text-slate-800">{assignment.title}</p>
                   <p className="mt-1 text-sm text-slate-500">Due: {assignment.dueDate}</p>
-                </div>
+                </button>
               ))}
             </div>
           </Card>

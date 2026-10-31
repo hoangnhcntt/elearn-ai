@@ -2,9 +2,12 @@ import { BookOpenCheck, BrainCircuit, CalendarCheck2, Target, Trophy } from 'luc
 import { DashboardLayout } from '../components/Layout'
 import { Card, StatCard } from '../components/ui'
 import { assignments, quizBank, students } from '../data/mockData'
+import { useAppState } from '../lib/appState'
 
 export function StudentDashboard() {
-  const currentStudent = students[0]
+  const { user, setCurrentPage } = useAppState()
+  const currentStudent = user?.role === 'student' ? user : students[0]
+  const studentAssignments = assignments.filter((assignment) => assignment.classId === currentStudent.classId)
 
   return (
     <DashboardLayout active="dashboard" title="Student Dashboard">
@@ -21,10 +24,10 @@ export function StudentDashboard() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard title="Today's tasks" value="3" hint="1 due soon" />
-          <StatCard title="Unfinished" value="2" hint="Keep going" />
-          <StatCard title="Recent score" value="86%" hint="+7%" />
-          <StatCard title="Progress" value="78%" hint="Strong" />
+          <StatCard title="Today's tasks" value={String(studentAssignments.length)} hint="Ready to practice" />
+          <StatCard title="Unfinished" value={String(studentAssignments.filter((assignment) => assignment.status === 'in_progress' || assignment.status === 'not_started').length)} hint="Keep going" />
+          <StatCard title="Recent score" value={`${currentStudent.lastScore}%`} hint="Latest result" />
+          <StatCard title="Progress" value={`${currentStudent.progress}%`} hint="Learning progress" />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -34,8 +37,8 @@ export function StudentDashboard() {
               <h3 className="text-xl font-semibold text-slate-900">Assignments</h3>
             </div>
             <div className="mt-4 space-y-3">
-              {assignments.map((assignment) => (
-                <div key={assignment.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              {studentAssignments.map((assignment) => (
+                <button key={assignment.id} type="button" onClick={() => setCurrentPage('assignments')} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-400">
                   <div>
                     <p className="font-medium text-slate-900">{assignment.title}</p>
                     <p className="text-sm text-slate-500">Due {assignment.dueDate}</p>
@@ -44,7 +47,7 @@ export function StudentDashboard() {
                     <p className="text-sm text-slate-500">{assignment.completionRate}%</p>
                     <p className="text-xs text-brand-600">{assignment.status}</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </Card>
@@ -84,6 +87,9 @@ export function StudentDashboard() {
               <p className="text-sm text-slate-500">{quizBank.title}</p>
               <p className="text-2xl font-semibold text-slate-900">{quizBank.questionCount} questions</p>
               <p className="text-sm text-slate-500">{quizBank.timeLimitMinutes} minutes</p>
+              <button type="button" onClick={() => setCurrentPage('assignments')} className="mt-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600">
+                Start practice
+              </button>
             </div>
           </Card>
 

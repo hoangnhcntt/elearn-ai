@@ -12,8 +12,19 @@ export function AiTutor() {
   const [input, setInput] = useState('')
 
   const sendMessage = () => {
-    if (!input.trim()) return
-    setMessages((prev) => [...prev, { role: 'student', text: input }])
+    const prompt = input.trim()
+    if (!prompt) return
+
+    const normalizedPrompt = prompt.toLowerCase()
+    const reply = normalizedPrompt.includes('make') || normalizedPrompt.includes('do')
+      ? 'Use “do” for tasks and activities (do homework, do the dishes). Use “make” when creating something (make a plan, make dinner).'
+      : normalizedPrompt.includes('past') || normalizedPrompt.includes('yesterday')
+        ? 'For a completed action in the past, use the past simple: “I studied yesterday.” Some verbs are irregular, such as “go → went.”'
+        : normalizedPrompt.includes('vocabulary') || normalizedPrompt.includes('word')
+          ? 'Try learning a new word in a short sentence. For example: “The journey was exciting.” What word would you like to practice?'
+          : 'Good question! Try writing one example sentence. I can help you practice grammar, vocabulary, and everyday English in this demo.'
+
+    setMessages((prev) => [...prev, { role: 'student', text: prompt }, { role: 'assistant', text: reply }])
     setInput('')
   }
 
@@ -41,7 +52,7 @@ export function AiTutor() {
             </div>
             <div>
               <p className="font-medium text-slate-900">ELearn AI Tutor</p>
-              <p className="text-xs text-slate-500">Live English support</p>
+              <p className="text-xs text-slate-500">English practice · demo tutor</p>
             </div>
           </div>
 
@@ -53,17 +64,18 @@ export function AiTutor() {
             ))}
           </div>
 
-          <div className="mt-5 flex gap-3">
+          <form className="mt-5 flex gap-3" onSubmit={(event) => { event.preventDefault(); sendMessage() }}>
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="Ask a question..."
+              aria-label="Ask the English tutor"
               className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 outline-none"
             />
-            <button type="button" onClick={sendMessage} className="rounded-xl bg-brand-500 p-3 text-white transition hover:bg-brand-600">
+            <button type="submit" aria-label="Send message" disabled={!input.trim()} className="rounded-xl bg-brand-500 p-3 text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50">
               <SendHorizonal size={18} />
             </button>
-          </div>
+          </form>
         </Card>
       </div>
     </DashboardLayout>

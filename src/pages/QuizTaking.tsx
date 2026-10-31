@@ -2,23 +2,38 @@ import { useMemo, useState } from 'react'
 import { DashboardLayout } from '../components/Layout'
 import { Card } from '../components/ui'
 import { quizBank } from '../data/mockData'
+import { useAppState } from '../lib/appState'
 
 export function QuizTaking() {
+  const { draftTitle, setCurrentPage, setQuizScore, user } = useAppState()
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [error, setError] = useState('')
   const total = useMemo(() => quizBank.questions.length, [])
 
   const handleAnswerChange = (questionId: string, choice: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: choice }))
+    setError('')
+  }
+
+  const submitQuiz = () => {
+    if (Object.keys(answers).length !== total) {
+      setError('Please answer every question before submitting.')
+      return
+    }
+
+    const correctAnswers = quizBank.questions.filter((question) => answers[question.id] === question.answer).length
+    setQuizScore(Math.round((correctAnswers / total) * 100))
+    setCurrentPage('result')
   }
 
   return (
-    <DashboardLayout active="assignments" title="Quiz Taking">
+    <DashboardLayout active="assignments" title="Take a quiz">
       <div className="space-y-6">
         <Card className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Assignment</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">{quizBank.title}</h3>
+              <h3 className="mt-2 text-2xl font-semibold text-slate-900">{draftTitle || quizBank.title}</h3>
             </div>
             <div className="rounded-xl bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700">{total} questions</div>
           </div>
@@ -46,8 +61,12 @@ export function QuizTaking() {
           </Card>
         ))}
 
-        <div className="flex justify-end">
-          <button type="button" className="rounded-2xl bg-brand-500 px-5 py-3 font-medium text-white transition hover:bg-brand-600">
+        {error && <p role="alert" className="text-sm font-medium text-red-700">{error}</p>}
+        <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row">
+          <button type="button" onClick={() => setCurrentPage(user?.role === 'teacher' ? 'assignments' : 'dashboard')} className="rounded-2xl border border-slate-200 px-5 py-3 font-medium text-slate-700 transition hover:bg-slate-50">
+            Back
+          </button>
+          <button type="button" onClick={submitQuiz} className="rounded-2xl bg-brand-500 px-5 py-3 font-medium text-white transition hover:bg-brand-600">
             Submit quiz
           </button>
         </div>
