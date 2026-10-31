@@ -41,7 +41,7 @@ export function useAppState() {
 export const defaultAppState: AppState = {
   user: null,
   language: 'vi',
-  appMode: (import.meta.env.VITE_APP_MODE as AppMode) || 'mock',
+  appMode: import.meta.env.VITE_APP_MODE === 'mock' ? 'mock' : 'live',
   currentPage: 'dashboard',
   quizScore: null,
   draftTitle: '',

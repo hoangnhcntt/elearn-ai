@@ -1,11 +1,11 @@
 # ELearn AI
 
-ELearn AI là nền tảng học tiếng Anh dành cho giáo viên và học sinh, tập trung vào trải nghiệm hiện đại, phản hồi AI, quản lý lớp học và theo dõi tiến độ. Dự án hiện có phiên bản frontend chạy local hoàn chỉnh ở chế độ mock và có nền tảng backend/DB schema sẵn sàng nối tiếp với Supabase + Cloudflare khi bạn có tài khoản thật.
+ELearn AI là nền tảng học tiếng Anh dành cho giáo viên và học sinh, tập trung vào trải nghiệm hiện đại, phản hồi AI, quản lý lớp học và theo dõi tiến độ. Giao diện chạy trên Cloudflare Pages; đăng nhập thật được kiểm tra bởi Cloudflare Worker.
 
 ## 1. Tính năng đã hoàn thành
 
 - Giao diện landing + login đa vai trò
-- Đăng nhập demo theo vai trò với tùy chọn ghi nhớ phiên
+- Đăng nhập giáo viên/học sinh qua Cloudflare Worker, có lưu phiên tùy chọn
 - Teacher Dashboard và Student Dashboard
 - Quản lý lớp học và học sinh demo
 - Bài tập / quiz editor / quiz taking mock
@@ -13,14 +13,11 @@ ELearn AI là nền tảng học tiếng Anh dành cho giáo viên và học sin
 - AI Tutor mock chat
 - Analytics & insights
 - Cloudflare Worker skeleton cho `/api/ai/generate-quiz`
-- SQL migration cho schema PostgreSQL với RLS-ready policies
-- `.env.example` và cấu trúc deployment-ready
+- Mật khẩu được chuyển thành PBKDF2 hash và đưa vào Cloudflare Worker secrets
 
 ## 2. Tính năng chưa hoàn thành / cần kích hoạt thật
 
-- Kết nối Supabase Auth thực tế
-- Tạo và quản lý teacher/student qua backend thật
-- RLS hoạt động với dữ liệu thật ở Supabase
+- Phân quyền dữ liệu ứng dụng thật; nội dung lớp học/bài tập hiện vẫn là dữ liệu mock
 - AI quiz generation và scoring thật qua Cloudflare AI
 - Cron tự giao bài hằng ngày trên cloud
 - Giao diện responsive mobile đã được xây dựng, nhưng cần xác thực với env thật
@@ -70,17 +67,13 @@ File mẫu chứa:
 
 ```env
 VITE_APP_NAME=ELearn AI
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_APP_MODE=mock
-CLOUDFLARE_ACCOUNT_ID=
-CLOUDFLARE_API_TOKEN=
-WORKER_AI_MODEL=@cf/meta/llama-3.1-8b-instruct
+VITE_APP_MODE=live
+VITE_AUTH_API_URL=https://<worker-url>
 ```
 
-Lưu ý: ở chế độ mock, app vẫn chạy mà không cần key thật.
+`VITE_AUTH_API_URL` là URL public của Worker, không phải secret; ứng dụng đã có giá trị mặc định. Chỉ cần đổi biến này nếu thay tên Worker.
 
-### Đăng nhập demo
+### Tài khoản đăng nhập
 
 Trang đăng nhập chấp nhận hai tài khoản demo:
 
@@ -91,7 +84,7 @@ Trang đăng nhập chấp nhận hai tài khoản demo:
 
 Tick **Ghi nhớ đăng nhập trên thiết bị này** để giữ phiên trong local storage; mật khẩu không được lưu. Bỏ tick thì phiên chỉ tồn tại đến khi tải lại trang hoặc đóng tab. Đăng xuất sẽ xóa phiên đã ghi nhớ.
 
-Đây chỉ là xác thực mock ở frontend; thông tin tài khoản demo nằm trong mã JavaScript công khai và bất kỳ ai cũng có thể đăng nhập. Không sử dụng cho dữ liệu thật hoặc mật khẩu thật. Hai CSV riêng trong `accounts/` chưa được ứng dụng đọc. Muốn xác thực an toàn và tạo nhiều tài khoản, hãy cấu hình Supabase Auth/backend thay vì thêm mật khẩu vào frontend.
+Ở chế độ mock (`VITE_APP_MODE=mock`), ứng dụng chấp nhận tài khoản demo nêu trên. Production mặc định xác thực qua Worker; tài khoản có trong CSV không được đưa vào JavaScript frontend.
 
 ## Danh sách tài khoản mẫu
 
@@ -100,33 +93,24 @@ Thư mục `accounts/` có hai bảng CSV riêng:
 - `accounts/students.csv`: danh sách học sinh
 - `accounts/teachers.csv`: danh sách giáo viên
 
-Mỗi dòng gồm `name,username,password`. Có thể mở bằng Excel hoặc trình soạn thảo văn bản. Hai file CSV dữ liệu thật đã được `.gitignore` loại khỏi Git; chỉ các file `.example` rỗng được đưa lên repository. **Không điền mật khẩu thật vào repository công khai.**
+Mỗi dòng gồm `name,username,password`. Có thể mở bằng Excel hoặc trình soạn thảo văn bản. Hai file CSV dữ liệu thật đã được `.gitignore` loại khỏi Git; chỉ các file `.example` rỗng được đưa lên repository. **Không đưa CSV lên Git.**
 
-Các file này hiện chỉ là danh sách cục bộ để quản lý thủ công, **chưa kết nối với chức năng đăng nhập**. Ứng dụng vẫn dùng dữ liệu demo. Muốn tạo tài khoản đăng nhập thật, cần nối Supabase Auth hoặc backend xác thực và không lưu mật khẩu dạng chữ thường.
+Khi deploy Worker, script đọc các CSV cục bộ, tạo salt riêng và PBKDF2-SHA256 hash cho mỗi mật khẩu, rồi tải hash cùng khóa phiên lên Cloudflare Worker secrets. Mật khẩu dạng rõ không được gửi lên Cloudflare, ghi vào frontend hoặc commit lên Git. Đổi danh sách tài khoản trong CSV rồi deploy Worker lại để cập nhật.
 
 ## 5. Deploy online
 
-### 5.1 Tạo Supabase project
+### 5.1 Deploy backend đăng nhập
 
-1. Vào https://supabase.com/
-2. Tạo project mới
-3. Lấy URL và anon key
-4. Chạy SQL migration trong `supabase/migrations/001_init.sql`
-5. Cấu hình Auth và đăng nhập
-6. Bật Row Level Security, kiểm tra các policy đã tạo
-
-### 5.2 Deploy API Worker
-
-Worker dùng binding Workers AI `AI`, đã được khai báo trong `wrangler.toml`. Từ thư mục dự án, cài dependencies rồi deploy:
+Chỉnh sửa `accounts/students.csv` và `accounts/teachers.csv`, sau đó chạy:
 
 ```bash
 npm ci
 npm run deploy:worker
 ```
 
-Sau khi deploy, kiểm tra endpoint health tại `https://elearn-ai-worker.<subdomain>.workers.dev/api/health`.
+Lệnh này deploy Worker và đồng bộ danh sách username, tên hiển thị, hash mật khẩu từ hai CSV vào secret được bảo vệ của Cloudflare. Không gửi hay commit file CSV.
 
-### 5.3 Deploy frontend lên Cloudflare Pages
+### 5.2 Deploy frontend lên Cloudflare Pages
 
 Kết nối GitHub để Cloudflare tự build và deploy mỗi khi có commit mới trên nhánh `main`:
 
@@ -135,18 +119,9 @@ Kết nối GitHub để Cloudflare tự build và deploy mỗi khi có commit m
 3. Chọn nhánh production `main`, framework preset `Vite`, build command `npm run build` và output directory `dist`.
 4. Tạo project Pages và chờ Cloudflare hoàn tất production deployment.
 
-Ứng dụng frontend hiện ở chế độ mock; Supabase Auth và API Worker chưa được nối vào frontend.
+Sau khi deploy Worker, push thay đổi frontend lên nhánh `main`; Cloudflare Pages sẽ build và deploy tự động. Tài khoản `student.demo` và `teacher.demo` có thể đăng nhập bằng mật khẩu trong CSV local tương ứng.
 
-### 5.4 Tạo Supabase project
-
-1. Vào https://supabase.com/
-2. Tạo project mới
-3. Lấy URL và anon key
-4. Chạy SQL migration trong `supabase/migrations/001_init.sql`
-5. Cấu hình Auth và đăng nhập
-6. Bật Row Level Security, kiểm tra các policy đã tạo
-
-### 5.5 Tạo GitHub repo
+### 5.3 Tạo GitHub repo
 
 ```bash
 git init
@@ -176,7 +151,6 @@ Kết quả thực tế đã chạy thành công trên máy này:
 
 | Dịch vụ | Gói miễn phí | Giới hạn | Hành động khi vượt hạn | Cách tránh phát sinh phí |
 |---|---|---:|---|---|
-| Supabase | Free | DB + storage + auth theo quota | Giới hạn truy cập hoặc cần nâng gói | Giữ dữ liệu tối giản, tập trung quyền RLS |
 | Cloudflare Pages | Free | Quota deployment và bandwidth theo chính sách hiện hành | Tắt hoặc giới hạn traffic | Không cần domain riêng, chỉ dùng mặc định pages.dev |
 | Cloudflare Workers | Free tier | Request + CPU + AI quotas | Worker trả lỗi 429/5xx | Giới hạn AI calls, cache template, tránh AI cho từng học sinh nếu không cần |
 | Cloudflare Workers AI | Free tier / quota theo policy | Model quota theo account | Từ chối request AI | Dùng template đề chung theo level/topic |
@@ -184,11 +158,11 @@ Kết quả thực tế đã chạy thành công trên máy này:
 ## 8. Bảo mật / quyền người dùng
 
 - Không đưa API key vào frontend
-- Không dùng service-role key ở browser
-- Chỉ lưu password dạng hash ở backend
-- RLS phải được bật trên bảng nhạy cảm
+- Chỉ lưu password dạng hash trong Cloudflare Worker secret
+- Không commit CSV có mật khẩu
+- Phiên đăng nhập được ký HMAC và có thời hạn
 - Không cho học sinh tự nâng quyền thành teacher
-- Kiểm tra quyền ở backend và ở database policy
+- Nội dung lớp học và bài tập hiện là dữ liệu mock, chưa dùng cho dữ liệu học sinh thật
 
 ## 9. Cấu trúc thư mục
 
@@ -202,9 +176,8 @@ Kết quả thực tế đã chạy thành công trên máy này:
  │   └── types.ts
  ├── worker/
  │   └── index.ts
- ├── supabase/
- │   └── migrations/
- │       └── 001_init.sql
+ ├── scripts/
+ │   └── deploy-worker.mjs
  ├── .env.example
  ├── index.html
  ├── package.json
@@ -216,16 +189,12 @@ Kết quả thực tế đã chạy thành công trên máy này:
  └── elearn-ai-source.zip
 ```
 
-## 10. Tài khoản / API key cần tự tạo
+## 10. Tài khoản / API cần có
 
-- Supabase project URL
-- Supabase anon key
-- Supabase service role key (chỉ backend, không dùng frontend)
 - Cloudflare account
-- Cloudflare API token
 - Cloudflare AI binding / model
 - GitHub repository
 
 ## 11. Kết luận ngắn gọn
 
-Dự án hiện đã tạo được một app ELearn AI chạy được lokal và sẵn sàng triển khai khi bạn kết nối với Supabase và Cloudflare thật. Đây là phiên bản thực tế với giao diện hoàn chỉnh, backend schema, worker skeleton và mock mode; các tính năng AI/cloud thật cần có tài khoản thật mới có thể kích hoạt hoàn toàn.
+Dự án có giao diện ELearn AI, đăng nhập Cloudflare Worker với danh sách tài khoản local, và các workflow demo cho lớp học, bài tập và AI Tutor.

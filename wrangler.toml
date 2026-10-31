@@ -4,6 +4,7 @@ compatibility_date = "2026-10-31"
 
 [vars]
 RATE_LIMIT = "10"
+AUTH_ALLOWED_ORIGINS = "https://elearn-ai.pages.dev,http://localhost:5173,http://localhost:4173,http://127.0.0.1:4173"
 
 [ai]
 binding = "AI"

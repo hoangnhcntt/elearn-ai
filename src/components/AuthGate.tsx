@@ -3,35 +3,44 @@ import type { FormEvent } from 'react'
 import { BookOpenCheck, ShieldCheck, Sparkles } from 'lucide-react'
 import { authenticateDemoAccount, forgetDemoUser, rememberDemoUser } from '../lib/demoAuth'
 import { defaultAppState, useAppState } from '../lib/appState'
+import { signInWithCloudflare } from '../lib/cloudflareAuth'
 import { Badge } from './ui'
 
-export function AuthGate() {
-  const { setUser } = useAppState()
+export function AuthGate({ initialError = '' }: { initialError?: string }) {
+  const { setUser, appMode } = useAppState()
   const [role, setRole] = useState<'teacher' | 'student'>('teacher')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(initialError)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleLogin = (event: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
-
-    const user = authenticateDemoAccount(role, username, password)
-    if (!user) {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng.')
-      return
-    }
+    setIsSubmitting(true)
 
     try {
+      if (appMode === 'live') {
+        const user = await signInWithCloudflare(role, username, password, rememberMe)
+        setUser(user)
+        return
+      }
+
+      const user = authenticateDemoAccount(role, username, password)
+      if (!user) {
+        setError('Tên đăng nhập hoặc mật khẩu không đúng.')
+        return
+      }
+
       if (rememberMe) rememberDemoUser(user)
       else forgetDemoUser()
-    } catch {
-      setError('Không thể lưu phiên đăng nhập trên trình duyệt này. Hãy tắt “Ghi nhớ đăng nhập” và thử lại.')
-      return
+      setUser(user)
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : 'Đã xảy ra lỗi khi đăng nhập.')
+    } finally {
+      setIsSubmitting(false)
     }
-
-    setUser(user)
   }
 
   return (
@@ -74,9 +83,14 @@ export function AuthGate() {
 
           <div className="flex items-center justify-center p-8 md:p-12">
             <div className="w-full max-w-md">
-              <Badge label="Đăng nhập demo" tone="blue" />
+              <Badge label={appMode === 'live' ? 'Đăng nhập an toàn' : 'Đăng nhập demo'} tone="blue" />
               <h2 className="mt-6 text-3xl font-bold text-slate-900">Chào mừng trở lại</h2>
               <p className="mt-2 text-sm text-slate-500">Đăng nhập bằng tài khoản học sinh hoặc giáo viên.</p>
+              {appMode === 'live' && (
+                <p className="mt-2 text-xs text-slate-500">
+                  Dùng tên đăng nhập trong danh sách tài khoản đã triển khai.
+                </p>
+              )}
 
               <div className="mt-8 flex rounded-xl border border-slate-200 bg-slate-50 p-1">
                 <button
@@ -135,13 +149,16 @@ export function AuthGate() {
                 {error && <p role="alert" className="text-sm font-medium text-red-700">{error}</p>}
                 <button
                   type="submit"
-                  className="flex w-full items-center justify-center rounded-2xl bg-brand-500 px-4 py-3.5 text-left font-semibold text-white transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                  disabled={isSubmitting}
+                  className="flex w-full items-center justify-center rounded-2xl bg-brand-500 px-4 py-3.5 text-left font-semibold text-white transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Đăng nhập
+                  {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
                 </button>
-                <p className="text-xs leading-relaxed text-slate-500">
-                  Đây là bản demo: tài khoản mẫu dùng chung và không bảo vệ dữ liệu thật.
-                </p>
+                {appMode === 'mock' && (
+                  <p className="text-xs leading-relaxed text-slate-500">
+                    Đây là bản demo: tài khoản mẫu dùng chung và không bảo vệ dữ liệu thật.
+                  </p>
+                )}
               </form>
             </div>
           </div>
